@@ -4,8 +4,11 @@
 #include <ArduinoOTA.h>
 
 // WiFi credentials
+// const char* ssid = "NEDUET-WiFi Network";
+// const char* password = "neduet33iacc44&";
 const char* ssid = "Iqrar-ZiNetwork-netsol";
 const char* password = "iqrar@786";
+
 
 // ThingSpeak settings
 unsigned long channelID = 2917545;
@@ -43,18 +46,17 @@ void setup() {
   ThingSpeak.begin(client);
 
   // Configure OTA
-  ArduinoOTA.setHostname("ESP32-WeatherStation");  // Device name in network
-  // ArduinoOTA.setPassword("admin123");  // Optional OTA password
+  ArduinoOTA.setHostname("ESP32-WeatherStation");  
   ArduinoOTA.begin();
   Serial.println("OTA ready");
 }
 
 void loop() {
-  ArduinoOTA.handle();  // Always keep this in loop for OTA
+  ArduinoOTA.handle();  // keep this in loop for OTA
   static unsigned long lastUpload = 0;
   delay(2000);
 
-  // Sensor readings (unchanged)
+  // Sensor readings
   float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
   if (isnan(humidity)) humidity = 0;
