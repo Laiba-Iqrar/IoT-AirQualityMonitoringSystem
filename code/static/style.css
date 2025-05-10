@@ -31,3 +31,27 @@ canvas {
     font-size: 20px;
     font-weight: 600;
 }
+
+body {
+    background-color: #f7f9fc;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+canvas {
+    margin-top: 10px;
+}
+body {
+    background-color: #f7f9fc;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+canvas {
+    margin-top: 10px;
+}
+
