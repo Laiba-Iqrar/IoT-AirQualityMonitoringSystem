@@ -1,15 +1,17 @@
-<!-- templates/dashboard.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ThingSpeak Dashboard</title>
+    <title>CO₂ Monitoring Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <meta http-equiv="refresh" content="60">
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">{{ channel_name }} Dashboard</span>
+            <span class="navbar-brand mb-0 h1">{{ channel_name }} - CO₂ Monitoring Dashboard</span>
         </div>
     </nav>
 
@@ -34,19 +36,51 @@
             </div>
         </div>
 
+        <!-- Live Gauges -->
+        <!-- <div class="mb-5">
+            <h2 class="text-success">Live Environmental Gauges</h2>
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <h5>CO₂ Level (ppm)</h5>
+                    <canvas id="co2Gauge" width="200" height="200"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <h5>Temperature (°C)</h5>
+                    <canvas id="temperatureThermometer" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </div> -->
+        <!-- Live Gauges -->
+        <div class="mb-5">
+            <h2 class="text-success">Live Environmental Gauges</h2>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h5>CO₂ Level (ppm)</h5>
+                    <canvas id="co2Gauge" width="200" height="200"></canvas>
+                </div>
+                <div class="col-md-4">
+                    <h5>Temperature (°C)</h5>
+                    <canvas id="temperatureThermometer" width="200" height="200"></canvas>
+                </div>
+                <div class="col-md-4">
+                    <h5>Humidity (%)</h5>
+                    <canvas id="humidityGauge" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+
+
         <!-- Chart Section -->
         <div class="mb-5">
-            <h2 class="text-success">Historical Data Chart</h2>
+            <h2 class="text-warning">Historical Data Chart</h2>
             <canvas id="dataChart" height="120"></canvas>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script>
-        const ctx = document.getElementById('dataChart').getContext('2d');
         const labels = [{% for entry in all_data %}"{{ entry.timestamp | datetimeformat }}",{% endfor %}];
-
         const datasets = [
             {% for field_name in fields %}
             {
@@ -65,7 +99,7 @@
             {% endfor %}
         ];
 
-        new Chart(ctx, {
+        new Chart(document.getElementById('dataChart').getContext('2d'), {
             type: 'line',
             data: {
                 labels: labels,
@@ -80,10 +114,7 @@
                 scales: {
                     x: {
                         type: 'time',
-                        time: {
-                            unit: 'minute',
-                            tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
-                        },
+                        time: { unit: 'minute', tooltipFormat: 'yyyy-MM-dd HH:mm:ss' },
                         title: { display: true, text: 'Timestamp' }
                     },
                     y: {
@@ -93,6 +124,37 @@
                 }
             }
         });
+
+        function createGauge(id, value, min, max, label) {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: [label, 'Remaining'],
+                    datasets: [{
+                        label: label,
+                        data: [value, max - value],
+                        backgroundColor: ['#007bff', '#e9ecef'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    rotation: -90,
+                    circumference: 180,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        title: { display: true, text: `${value} ${label}` }
+                    }
+                }
+            });
+        }
+
+        // Replace with real-time values passed from Flask if desired
+        createGauge('co2Gauge', {{ latest_entry.fields['CO2'] | default(0) | float }}, 0, 2000, 'ppm');
+        createGauge('temperatureThermometer', {{ latest_entry.fields['Temperature'] | default(0) | float }}, -10, 50, '°C');
+        createGauge('humidityGauge', {{ latest_entry.fields['Humidity'] | default(0) | float }}, 0, 100, '%');
+
     </script>
 </body>
 </html>
